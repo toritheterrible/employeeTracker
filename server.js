@@ -1,6 +1,30 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require('console.table');
+const Employee = require("./class")
+
+
+db = [
+    {
+        first_name: 'Tori',
+        last_name: 'Bromma',
+        title: 'Sales Lead',
+        department: 'Sales',
+        salary: 100000,
+        manager: 'Kobe Bryant'
+      },
+
+      {
+        first_name: 'Jake',
+        last_name: 'Bromma',
+        title: 'Sales Lead',
+        department: 'Sales',
+        salary: 100000,
+        manager: 'Kobe Bryant'
+      }
+
+
+]
 
 
 const connection = mysql.createConnection({
@@ -66,12 +90,12 @@ var newEmployee = function () {
             type: "list",
             name: "title",
             choices: [
-                "Sales Lead", // sales deparment id = 1
-                "Sales Person", 
-                "Lead Engineer", // engineering department id = 2
-                "Software Engineer", 
-                "Accountant", // finance department id = 3
-                "Legal Team Lead",
+                "Sales Lead", // sales deparment id = 1 // role id = 1
+                "Sales Person", // role id = 2
+                "Lead Engineer", // engineering department id = 2 // role id = 2 
+                "Software Engineer", // role id = 3
+                "Accountant", // finance department id = 3 // role id = 4
+                "Legal Team Lead", // legal department id = 4 role id = 5
                 "Lawyer"
             ],
             message: "What is the employee's role?"
@@ -108,48 +132,61 @@ var newEmployee = function () {
                 "Kareem Abdul Jabar", // manager id = 4
                 "Hakeem Olajuwon", // manager id = 5
                 "Michael Jordan", // manager id = 6
-                "Wilt Chamberlain" // manager id = 7
+                "Wilt Chamberlain", // manager id = 7
+                "Null"
             ],
             message: "Who is the employee's manager?"
         }
     ]
 ).then(function(answer) {
 
-    console.log(answer);
+    // console.log(answer);
+
+    
+
 
     switch (answer.title) {
 
         case "Sales Lead":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Sales", 100000, answer.manager)
+            console.table(db)
         break;
 
         case "Sales Person":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Sales", 80000, answer.manager)
+            console.log(addEmployee);
         break;
 
         case "Lead Engineer":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Engineering", 150000, answer.manager)
+            console.log(addEmployee);
         break;
 
         case "Software Engineer":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Engineering", 100000, answer.manager)
+            console.log(addEmployee);
         break;
-
+            
         case "Accountant":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Finance", 125000, answer.manager)
+            console.log(addEmployee);
         break;
 
         case "Legal Team Lead":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Legal", 275000, answer.manager)
+            console.log(addEmployee);
         break;
 
         case "Lawyer":
-
+            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Legal", 200000, answer.manager)
+            console.log(addEmployee);
         break;
 
 
 
     }
+
+    
 })
 
 } 
