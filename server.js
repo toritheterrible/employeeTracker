@@ -58,7 +58,8 @@ async function questions() {
         break;
 
         case "Update Employee Role": 
-        console.log("In progress...");
+        updatedEmployee = await getUpdateEmployeeRole();
+        updateEmployeeRole(updatedEmployee);
         break;
 
         case "Update Employee Manager": 
@@ -353,23 +354,45 @@ async function addRole(roleInfo) {
 questions();
 
 
-// managerChoices();
+async function viewEmployee() {
+    query = `
+    SELECT CONCAT(first_name, " ", last_name) 
+    as employee FROM employee`
+    rows = await connection.query(query);
+    employees = [];
+            for (const name of rows) {
+                employees.push(name.employee)}
+   return employees;
+}
 
+async function getUpdateEmployeeRole() {
+employees = await viewEmployee();
+roles = await viewAllRoles();
+    return inquirer.prompt(
 
-// async function getDepartment() {
-//     connection.query(`SELECT 
-//     department.name
-//     FROM employee_trackerDB.department;`, function(err,res) {
-//     if(err) throw err
-//     console.log(res);
+        [
+                {
+                    type: "list",
+                    name: "employee",
+                    choices: [...employees],
+                    message: "Whose role would you like to update??"
+                },
+                {
+                    type: "list",
+                    name: "title",
+                    choices: [...roles],
+                    message: "Whose role would you like to update??"
+                }
+        ]   
+    )
+}
 
-//     // WHERE department.name = "Sales";
+async function updateEmployeeRole (employeeInfo) {
+let employee = await getFirstAndLastName(employeeInfo.employee)
+let roleId = await getRoleId(employeeInfo.title);
 
-//     department = [];
-
-//             for (const name of res) {
-//                 department.push(name.name)}
-
-//                 console.log(department)
-// })
-// }
+let query = "UPDATE employee SET role_id = ? WHERE first_name = ? and last_name = ?";
+let args = [roleId, employee[0], employee[1]];
+const rows = await connection.query(query, args);
+console.log(`Added employee ${roleId} ${employee[0]}.`);
+}
