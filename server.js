@@ -1,103 +1,121 @@
-const mysql = require("mysql");
+const Database = require("./connection.js")
 const inquirer = require("inquirer");
 const cTable = require('console.table');
-const Employee = require("./class")
+const Employee = require("./class");
 
 
-db = [
-    {
-        first_name: 'Tori',
-        last_name: 'Bromma',
-        title: 'Sales Lead',
-        department: 'Sales',
-        salary: 100000,
-        manager: 'Kobe Bryant'
-      },
-
-      {
-        first_name: 'Jake',
-        last_name: 'Bromma',
-        title: 'Sales Lead',
-        department: 'Sales',
-        salary: 100000,
-        manager: 'Kobe Bryant'
-      }
-
-
-]
-
-
-const connection = mysql.createConnection({
+const connection = new Database({
     host: "localhost",
-    // Your port; if not 3306
     port: 3306,
-    // Your username
     user: "root",
-    // Your password
     password: "poop",
     database: "employee_trackerDB"
-});
-
-connection.connect(function (err) {
-    if (err) throw err;
-    console.log("connected as id " + connection.threadId);
-    promptUser();
+  });
 
 
-});
+pickOptions = [
+    "View All Employees",
+    "View All Employees by Department",
+    "View All Employees by Manager",
+    "Add Employee",
+    "Remove Employee",
+    "Update Employee Role",
+    "Update Employee Manager",
+    "View All Roles",
+    "Add Role",
+    "Remove Role",
+    "Add Department",
+    "Remove Department",
+    "Exit"
+];
 
-promptUser = function() {
-    inquirer.prompt(
 
-        {
-            type: "list",
-            name: "options",
-            choices: [
-                "View All Employees",
-                "View All Employees by Department",
-                "View All Employees by Manager",
-                "Add Employee",
-                "Remove Employee",
-                "Update Employee Role",
-                "Update Employee Manager"
-            ],
-            message: "What would you like to do?"
-        }
 
-).then(function(answer) {
+async function questions() {
 
-    if(answer.options === "Add Employee") {
-        newEmployee();
+        const answer = await inquirer.prompt(
+            {
+                type: "list",
+                name: "options",
+                choices: [...pickOptions],
+                message: "What would you like to do?"
+            });
+
+        switch(answer.options) {
+
+        case "Add Employee": 
+            const newEmployee = await getNewEmployee();
+            console.log(newEmployee);
+            await addEmployee(newEmployee);
+        break;
+
+        case "View All Employees by Department": 
+        await viewAllEmployeesByDepartment()
+        break;
+
+        case "Remove Employee": 
+        console.log("In progress...");
+        break;
+
+        case "Update Employee Role": 
+        console.log("In progress...");
+        break;
+
+        case "Update Employee Manager": 
+        console.log("In progress...");
+        break;
+
+        case "Remove Role": 
+        console.log("In progress...");
+        break;
+
+        case "Remove Department": 
+        console.log("In progress...");
+        break;
+        
+        case "View All Employees":
+        await viewAllEmployees();
+        break;
+        
+        case "View All Employees by Department": 
+        await viewAllEmployeesByDepartment()
+        break;
+        
+        case "View All Roles": 
+        roles = await viewAllRoles();
+        console.table(...roles);
+        questions();
+        break;
+        
+        case "Add Department": 
+        value = await addDepartment();
+        console.log(value.department)
+        insertDepartment(value.department);
+        break;
+
+        case "Add Role": 
+        const newRole = await getRole();
+        console.log(newRole);
+        await addRole(newRole);
+        break;
+
+        case "Exit": 
+            connection.end();
+        break;
+
+    }  
     }
 
-    else if(answer.options === "") {
 
-    }
-
-    else {
-        connection.end();
-    }
-
-
-});
-}
-
-
-var newEmployee = function () {
-    inquirer.prompt(
+async function getNewEmployee () {
+    managers = await viewAllManagers();
+    roles = await viewAllRoles();
+    return inquirer.prompt(
 [
         {
             type: "list",
             name: "title",
-            choices: [
-                "Sales Lead", // sales deparment id = 1 // role id = 1
-                "Sales Person", // role id = 2
-                "Lead Engineer", // engineering department id = 2 // role id = 2 
-                "Software Engineer", // role id = 3
-                "Accountant", // finance department id = 3 // role id = 4
-                "Legal Team Lead", // legal department id = 4 role id = 5
-                "Lawyer"
-            ],
+            choices: [...roles],
             message: "What is the employee's role?"
         },
         {
@@ -125,68 +143,233 @@ var newEmployee = function () {
         {
             type: "list",
             name: "manager",
-            choices: [
-                "Kobe Bryant", // manager id = 1
-                "Shaquille Oneal", // manager id = 2
-                "Jerry West", // manager id = 3
-                "Kareem Abdul Jabar", // manager id = 4
-                "Hakeem Olajuwon", // manager id = 5
-                "Michael Jordan", // manager id = 6
-                "Wilt Chamberlain", // manager id = 7
-                "Null"
-            ],
+            choices: [...managers],
             message: "Who is the employee's manager?"
         }
-    ]
-).then(function(answer) {
-
-    // console.log(answer);
-
-    
-
-
-    switch (answer.title) {
-
-        case "Sales Lead":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Sales", 100000, answer.manager)
-            console.table(db)
-        break;
-
-        case "Sales Person":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Sales", 80000, answer.manager)
-            console.log(addEmployee);
-        break;
-
-        case "Lead Engineer":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Engineering", 150000, answer.manager)
-            console.log(addEmployee);
-        break;
-
-        case "Software Engineer":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Engineering", 100000, answer.manager)
-            console.log(addEmployee);
-        break;
-            
-        case "Accountant":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Finance", 125000, answer.manager)
-            console.log(addEmployee);
-        break;
-
-        case "Legal Team Lead":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Legal", 275000, answer.manager)
-            console.log(addEmployee);
-        break;
-
-        case "Lawyer":
-            var addEmployee = new Employee(answer.first_name, answer.last_name, answer.title, "Legal", 200000, answer.manager)
-            console.log(addEmployee);
-        break;
+    ]);
+};
 
 
 
+async function getRole () {
+departments = await viewAllDepartments();
+        return inquirer.prompt(
+            [
+                    {
+                        type: "input",
+                        name: "title",
+                        message: "What role would you like to add?"
+                    },
+                    {
+                        type: "input",
+                        name: "salary",
+                        message: "How much is the salary of the new role?"
+                    },
+                    {
+                        type: "list",
+                        name: "department",
+                        choices: [...departments],
+                        message: "What department does this role belong to?"
+                    }
+                ]);
+
+}
+
+
+
+async function getRoleId(roleName) {
+    let query = "SELECT * FROM role WHERE role.title=?";
+    let args = [roleName];
+    const rows = await connection.query(query, args);
+    return rows[0].id;
+}
+
+async function getEmployeeId(fullName) {
+    let employee = getFirstAndLastName(fullName);
+
+    let query = 'SELECT id FROM employee WHERE employee.first_name=? AND employee.last_name=?';
+    let args=[employee[0], employee[1]];
+    const rows = await connection.query(query, args);
+    return rows[0].id;
+}
+
+async function getDepartmentId(departmentName) {
+    let query = "SELECT * FROM department where department.name=?"
+    let args = [departmentName]
+    const rows = await connection.query(query, args);
+    return rows[0].id;
+} 
+
+
+function getFirstAndLastName(fullName) {
+    // If a person has a space in their first name, such as "Mary Kay", 
+    // then first_name needs to ignore that first space. 
+    // Surnames generally do not have spaces in them so count the number
+    // of elements in the array after the split and merge all before the last
+    // element.
+    let employee = fullName.split(" ");
+    if(employee.length == 2) {
+        return employee;
     }
 
-    
-})
+    const last_name = employee[employee.length-1];
+    let first_name = " ";
+    for(let i=0; i<employee.length-1; i++) {
+        first_name = first_name + employee[i] + " ";
+    }
+    return [first_name.trim(), last_name];
+}
 
-} 
+
+async function viewAllManagers() {
+    
+        query = `SELECT CONCAT(e2.first_name, " ", e2.last_name) 
+        AS manager, e1.manager_id FROM employee AS e1
+        LEFT JOIN employee as e2
+        ON e1.manager_id = e2.role_id
+        WHERE e1.manager_id is NOT NULL;`
+
+                rows = await connection.query(query);
+
+                managers = rows.map(name => name.manager)
+
+                uniqueManager = [...new Set(managers)];
+
+                return uniqueManager
+        }
+
+async function viewAllEmployees() {
+    query = `
+    SELECT e1.first_name, e1.last_name, title, salary, name 
+    as department, CONCAT(e2.first_name, " ", e2.last_name) 
+    AS manager FROM employee AS e1
+    LEFT JOIN employee as e2
+    ON e1.manager_id = e2.role_id
+    INNER JOIN role
+    ON e1.role_id = role.id
+    INNER JOIN department
+    ON role.department_id = department.id;
+    `
+    rows = await connection.query(query);
+    console.table(rows);
+}
+
+
+
+async function viewAllEmployeesByDepartment() {
+    query = `
+    SELECT e1.first_name, e1.last_name, name 
+    as department FROM employee AS e1
+    LEFT JOIN employee as e2
+    ON e1.manager_id = e2.role_id
+    INNER JOIN role
+    ON e1.role_id = role.id
+    INNER JOIN department
+    ON role.department_id = department.id
+    `
+    rows = await connection.query(query);
+
+    console.table(rows); }
+
+
+async function viewAllRoles() {
+    query = `
+    SELECT title FROM role
+    `
+rows = await connection.query(query)
+role = [];
+            for (const name of rows) {
+                role.push(name.title)}
+                
+    var uniqueRole = [...new Set(role)];
+                // console.table(uniqueRole);
+
+                return uniqueRole;
+     
+}
+
+async function viewAllDepartments() {
+    query = `
+    SELECT name from department
+    `
+rows = await connection.query(query)
+department = [];
+            for (const name of rows) {
+                department.push(name.name)}
+                
+    var uniqueDepartment = [...new Set(department)];
+
+
+                return uniqueDepartment;
+
+}
+
+async function addDepartment() {
+
+value = await inquirer.prompt(
+
+    {
+        type: "input",
+        name: "department",
+        message: "What is the name of the department you wish to add?"
+    }
+    
+)
+return value
+}
+
+async function insertDepartment(value) {
+    query = "INSERT INTO department(name) VALUES(?)";
+
+    connection.query(query, value, function(err,res) {
+        if (err) throw err;
+        console.log(res);
+    });
+}
+
+async function addEmployee(employeeInfo) {
+    let roleId = await getRoleId(employeeInfo.title);
+    let managerId = await getEmployeeId(employeeInfo.manager);
+
+    let query = "INSERT into employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)";
+    let args = [employeeInfo.first_name, employeeInfo.last_name, roleId, managerId];
+    const rows = await connection.query(query, args);
+    console.log(`Added employee ${employeeInfo.first_name} ${employeeInfo.last_name}.`);
+
+}
+
+async function addRole(roleInfo) {
+
+    let departmentId = await getDepartmentId(roleInfo.department);
+    
+    let query = "INSERT into role (title, salary, department_id) VALUES (?,?,?)";
+    let args = [roleInfo.title, parseInt(roleInfo.salary), departmentId];
+    const rows = await connection.query(query, args);
+    console.log(`added role ${employeeInfo.title}, ${employeeInfo.salary}`);
+}
+
+
+
+questions();
+
+
+// managerChoices();
+
+
+// async function getDepartment() {
+//     connection.query(`SELECT 
+//     department.name
+//     FROM employee_trackerDB.department;`, function(err,res) {
+//     if(err) throw err
+//     console.log(res);
+
+//     // WHERE department.name = "Sales";
+
+//     department = [];
+
+//             for (const name of res) {
+//                 department.push(name.name)}
+
+//                 console.log(department)
+// })
+// }
