@@ -2,6 +2,7 @@ const Database = require("./connection.js")
 const inquirer = require("inquirer");
 const cTable = require('console.table');
 const Employee = require("./class");
+require("dotenv").config();
 
 
 const connection = new Database({
