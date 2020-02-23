@@ -48,14 +48,22 @@ async function questions() {
             const newEmployee = await getNewEmployee();
             console.log(newEmployee);
             await addEmployee(newEmployee);
+            
         break;
 
         case "View All Employees by Department": 
         await viewAllEmployeesByDepartment()
+        questions();
         break;
 
         case "Remove Employee": 
         console.log("In progress...");
+        questions();
+        break;
+
+        case "View All Employees by Manager":
+        console.log("In progress...");
+        questions();
         break;
 
         case "Update Employee Role": 
@@ -65,10 +73,12 @@ async function questions() {
 
         case "Update Employee Manager": 
         console.log("In progress...");
+        questions();
         break;
 
         case "Remove Role": 
         console.log("In progress...");
+        questions();
         break;
 
         case "Remove Department": 
@@ -254,6 +264,7 @@ async function viewAllEmployees() {
     `
     rows = await connection.query(query);
     console.table(rows);
+    questions();
 }
 
 
@@ -284,7 +295,7 @@ role = [];
                 role.push(name.title)}
                 
     var uniqueRole = [...new Set(role)];
-                // console.table(uniqueRole);
+                console.table(uniqueRole);
 
                 return uniqueRole;
      
@@ -327,6 +338,7 @@ async function insertDepartment(value) {
         if (err) throw err;
         console.log(res);
     });
+    questions();
 }
 
 async function addEmployee(employeeInfo) {
@@ -337,7 +349,7 @@ async function addEmployee(employeeInfo) {
     let args = [employeeInfo.first_name, employeeInfo.last_name, roleId, managerId];
     const rows = await connection.query(query, args);
     console.log(`Added employee ${employeeInfo.first_name} ${employeeInfo.last_name}.`);
-
+    questions();
 }
 
 async function addRole(roleInfo) {
@@ -347,7 +359,8 @@ async function addRole(roleInfo) {
     let query = "INSERT into role (title, salary, department_id) VALUES (?,?,?)";
     let args = [roleInfo.title, parseInt(roleInfo.salary), departmentId];
     const rows = await connection.query(query, args);
-    console.log(`added role ${employeeInfo.title}, ${employeeInfo.salary}`);
+    console.log(`added role ${roleInfo.title}, ${roleInfo.salary}`);
+    questions();
 }
 
 
@@ -376,13 +389,13 @@ roles = await viewAllRoles();
                     type: "list",
                     name: "employee",
                     choices: [...employees],
-                    message: "Whose role would you like to update??"
+                    message: "Whose role would you like to update?"
                 },
                 {
                     type: "list",
                     name: "title",
                     choices: [...roles],
-                    message: "Whose role would you like to update??"
+                    message: "What role would you like to have for this employee?"
                 }
         ]   
     )
@@ -392,8 +405,9 @@ async function updateEmployeeRole (employeeInfo) {
 let employee = await getFirstAndLastName(employeeInfo.employee)
 let roleId = await getRoleId(employeeInfo.title);
 
-let query = "UPDATE employee SET role_id = ? WHERE first_name = ? and last_name = ?";
-let args = [roleId, employee[0], employee[1]];
+let query = "UPDATE employee SET role_id = ?, manager_id = ?  WHERE first_name = ? and last_name = ?";
+let args = [roleId, null, employee[0], employee[1]];
 const rows = await connection.query(query, args);
 console.log(`Added employee ${roleId} ${employee[0]}.`);
+questions();
 }
